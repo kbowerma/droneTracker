@@ -350,9 +350,11 @@ void Adafruit_LSM303_Mag_Unified::getEvent(sensors_event_t *event) {
     }
     else
     {
+      /*   Why is a library taking my serial
       Serial.print(_magData.x); Serial.print(" ");
       Serial.print(_magData.y); Serial.print(" ");
       Serial.print(_magData.z); Serial.println(" ");
+      */
       /* Check if the sensor is saturating or not */
       if ( (_magData.x >= 4090) | (_magData.x <= -4090) |
            (_magData.y >= 4090) | (_magData.y <= -4090) |

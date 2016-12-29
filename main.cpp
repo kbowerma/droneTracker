@@ -1,7 +1,7 @@
 /* From
 * https://github.com/krvarma/tinygps_sparkcore
 * [ ] Oled
-* [ ] LSM303DLHC
+* [x] LSM303DLHC
 * [ ] Posting with holdown logic
  */
 
@@ -34,11 +34,15 @@ void setup(){
     Particle.variable("HDOP", hdop);
     Particle.variable("version", MYVERSION);
     Particle.variable("project", FILENAME);
+    Particle.variable("heading", heading);
+
+    lsminit();
 }
 
 void loop(){
 
 gpsDispatch();
+lsmGetValues();
 
 
     delay(500);
@@ -63,16 +67,18 @@ void gpsDispatch() {
        clat = lat;
        clon = lon;
        alt = tgps.f_altitude();
-       hdop =  tgps.hdop()/100;
+       hdop =  double(tgps.hdop())/100;
        mps = tgps.f_speed_mps();
        mph = tgps.f_speed_mph();
        age = age;
        sats = tgps.satellites();
     if(serialDebug) {
-       Serial << "lat: " << String(lat) << " lon " << String(lon) << " alt " << tgps.f_altitude() << " sats " << tgps.satellites() << " hdop " << tgps.hdop();
-       Serial  << " speed "<< String(tgps.f_speed_mph()) <<" mph";
-       Serial << " " << String(tgps.f_speed_mps()) <<" mps";
-       Serial << " age " << String(age)   << " clat " << clat << endl;
+       Serial << "lat: " << clat << " lon " << clon;
+       Serial << " alt " << alt << " sats " << sats << " hdop " << hdop;
+       Serial  << " speed "<< String(mph) <<" mph";
+       Serial << " " << String(mps) <<" mps";
+       Serial << " age " << String(age)   << " heading " << heading << endl;
+
     }
   }
   else{

@@ -2,7 +2,7 @@
 Adafruit_LSM303_Accel_Unified accelo = Adafruit_LSM303_Accel_Unified(54321);
 Adafruit_LSM303_Mag_Unified mag = Adafruit_LSM303_Mag_Unified(12345);
 
-float yx, zx, ax, ay, az, mx, my, mz, heading;
+double yx, zx, ax, ay, az, mx, my, mz, heading;
 
 void displaySensorDetails(void) {
   sensor_t sensor;

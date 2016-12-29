@@ -8,3 +8,5 @@ float lat, lon;
 int sats;
 double clat, clon, mph, mps, alt,  hdop;
 unsigned long age;
+
+void gpsDispatch();

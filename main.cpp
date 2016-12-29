@@ -1,6 +1,9 @@
 /* From
 * https://github.com/krvarma/tinygps_sparkcore
-*/
+* [ ] Oled
+* [ ] LSM303DLHC
+* [ ] Posting with holdown logic
+ */
 
 #include "application.h"
 #include "spark_wiring_i2c.h"
@@ -32,44 +35,49 @@ void setup(){
 }
 
 void loop(){
-    bool isValidGPS = false;
-    for (unsigned long start = millis(); millis() - start < 1000;){
-        // Check GPS data is available
-        while (Serial1.available()){
-            char c = Serial1.read();
 
-            // parse GPS data
-            if (tgps.encode(c))
-                isValidGPS = true;
-        }
-    }
-    // If we have a valid GPS location then publish it
-    if (isValidGPS){
-        tgps.f_get_position(&lat, &lon, &age);
-
-         clat = lat;
-         clon = lon;
-         alt = tgps.f_altitude();
-         hdop =  tgps.hdop();
-         mps = tgps.f_speed_mps();
-         mph = tgps.f_speed_mph();
-         age = age;
-         sats = tgps.satellites();
-      if(serialDebug) {
-         Serial << "lat: " << String(lat) << " lon " << String(lon) << " alt " << tgps.f_altitude() << " sats " << tgps.satellites() << " hdop " << tgps.hdop();
-         Serial  << " speed "<< String(tgps.f_speed_mph()) <<" mph";
-         Serial << " " << String(tgps.f_speed_mps()) <<" mps";
-         Serial << " age " << String(age)   << " clat " << clat << endl;
-      }
-    }
-    else{
-        // Not a vlid GPS location, jsut pass 0.0,0.0
-        // This is not correct because 0.0,0.0 is a valid GPS location, we have to pass a invalid GPS location
-        // and check it at the client side
-        Serial << " . ";
-        //sprintf(szInfo, "0.0,0.0");
-    }
+gpsDispatch();
 
 
     delay(500);
+}
+
+void gpsDispatch() {
+  bool isValidGPS = false;
+  for (unsigned long start = millis(); millis() - start < 1000;){
+      // Check GPS data is available
+      while (Serial1.available()){
+          char c = Serial1.read();
+
+          // parse GPS data
+          if (tgps.encode(c))
+              isValidGPS = true;
+      }
+  }
+  // If we have a valid GPS location then publish it
+  if (isValidGPS){
+      tgps.f_get_position(&lat, &lon, &age);
+
+       clat = lat;
+       clon = lon;
+       alt = tgps.f_altitude();
+       hdop =  tgps.hdop();
+       mps = tgps.f_speed_mps();
+       mph = tgps.f_speed_mph();
+       age = age;
+       sats = tgps.satellites();
+    if(serialDebug) {
+       Serial << "lat: " << String(lat) << " lon " << String(lon) << " alt " << tgps.f_altitude() << " sats " << tgps.satellites() << " hdop " << tgps.hdop();
+       Serial  << " speed "<< String(tgps.f_speed_mph()) <<" mph";
+       Serial << " " << String(tgps.f_speed_mps()) <<" mps";
+       Serial << " age " << String(age)   << " clat " << clat << endl;
+    }
+  }
+  else{
+      // Not a vlid GPS location, jsut pass 0.0,0.0
+      // This is not correct because 0.0,0.0 is a valid GPS location, we have to pass a invalid GPS location
+      // and check it at the client side
+      Serial << " . ";
+      //sprintf(szInfo, "0.0,0.0");
+  }
 }

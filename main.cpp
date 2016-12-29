@@ -32,6 +32,8 @@ void setup(){
     Particle.variable("mph", mph);
     Particle.variable("mps", mps);
     Particle.variable("HDOP", hdop);
+    Particle.variable("version", MYVERSION);
+    Particle.variable("project", FILENAME);
 }
 
 void loop(){
@@ -61,7 +63,7 @@ void gpsDispatch() {
        clat = lat;
        clon = lon;
        alt = tgps.f_altitude();
-       hdop =  tgps.hdop();
+       hdop =  tgps.hdop()/100;
        mps = tgps.f_speed_mps();
        mph = tgps.f_speed_mph();
        age = age;

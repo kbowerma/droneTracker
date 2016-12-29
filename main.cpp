@@ -10,8 +10,8 @@
 #include"lib/streaming/firmware/spark-streaming.h"
 #include "math.h"
 #include "lsmhelper.h"
-
 #include "lib/TinyGPS_SparkCore/firmware/TinyGPS.h"
+#include "myhelper.h"
 
 
 
@@ -25,6 +25,13 @@ int sleep = 15 * 60 * 1000;
 void setup(){
     Serial1.begin(9600);
     Serial.begin(9600);
+    Particle.variable("lat", clat);
+    Particle.variable("lon", clon);
+    Particle.variable("alt", alt);
+    Particle.variable("sats", sats);
+    Particle.variable("mph", mph);
+    Particle.variable("mps", mps);
+    Particle.variable("HDOP", hdop);
 }
 
 void loop(){
@@ -43,15 +50,26 @@ void loop(){
 
     // If we have a valid GPS location then publish it
     if (isValidGPS){
-        float lat, lon;
-        unsigned long age;
+      //  float lat, lon;
+      //  unsigned long age;
 
         tgps.f_get_position(&lat, &lon, &age);
 
         sprintf(szInfo, "%.6f,%.6f", (lat == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : lat), (lon == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : lon));
 
+         clat = lat;
+         clon = lon;
+         alt = tgps.f_altitude();
+         hdop =  tgps.hdop();
+         mps = tgps.f_speed_mps();
+         mph = tgps.f_speed_mph();
+         age = age;
+         sats = tgps.satellites();
 
-         Serial << "lat: " << String(lat) << " lon " << String(lon) << " alt " << tgps.f_altitude() << " sats " << tgps.satellites() << " hdop " << tgps.hdop() << " speed "<< tgps.f_speed_mph() <<" mph"  << endl;
+         Serial << "lat: " << String(lat) << " lon " << String(lon) << " alt " << tgps.f_altitude() << " sats " << tgps.satellites() << " hdop " << tgps.hdop();
+         Serial  << " speed "<< String(tgps.f_speed_mph()) <<" mph";
+         Serial << " " << String(tgps.f_speed_mps()) <<" mps";
+         Serial << " age " << String(age)   << " clat " << clat << endl;
     }
     else{
         // Not a vlid GPS location, jsut pass 0.0,0.0

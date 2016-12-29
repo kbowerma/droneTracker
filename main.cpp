@@ -16,11 +16,8 @@
 
 
 
+TinyGPS tgps;  // Instatinate Tny GPS
 
-TinyGPS tgps;
-char szInfo[64];
-// Every 15 minutes
-int sleep = 15 * 60 * 1000;
 
 void setup(){
     Serial1.begin(9600);
@@ -36,7 +33,6 @@ void setup(){
 
 void loop(){
     bool isValidGPS = false;
-
     for (unsigned long start = millis(); millis() - start < 1000;){
         // Check GPS data is available
         while (Serial1.available()){
@@ -47,15 +43,9 @@ void loop(){
                 isValidGPS = true;
         }
     }
-
     // If we have a valid GPS location then publish it
     if (isValidGPS){
-      //  float lat, lon;
-      //  unsigned long age;
-
         tgps.f_get_position(&lat, &lon, &age);
-
-        sprintf(szInfo, "%.6f,%.6f", (lat == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : lat), (lon == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : lon));
 
          clat = lat;
          clon = lon;
@@ -65,22 +55,21 @@ void loop(){
          mph = tgps.f_speed_mph();
          age = age;
          sats = tgps.satellites();
-
+      if(serialDebug) {
          Serial << "lat: " << String(lat) << " lon " << String(lon) << " alt " << tgps.f_altitude() << " sats " << tgps.satellites() << " hdop " << tgps.hdop();
          Serial  << " speed "<< String(tgps.f_speed_mph()) <<" mph";
          Serial << " " << String(tgps.f_speed_mps()) <<" mps";
          Serial << " age " << String(age)   << " clat " << clat << endl;
+      }
     }
     else{
         // Not a vlid GPS location, jsut pass 0.0,0.0
         // This is not correct because 0.0,0.0 is a valid GPS location, we have to pass a invalid GPS location
         // and check it at the client side
-        sprintf(szInfo, "0.0,0.0");
+        Serial << " . ";
+        //sprintf(szInfo, "0.0,0.0");
     }
 
-    // Spark.publish("gpsloc", szInfo);
 
-    // Sleep for some time
-    //delay(sleep);
     delay(500);
 }

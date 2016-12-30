@@ -104,7 +104,9 @@ void oled1() {
   display.setCursor(5,16);
   display << heading << endl;
   display.setTextSize(1);
-  display.setCursor(1,32);
+  display.setCursor(0,0);
+  display << "sats: " << sats << "  HDOP " << hdop << endl;
+  display << "     " << mph << "mph " << endl;
   /*
   display << "x: " << xAccl << endl;
   display << "y: " << yAccl << endl;

@@ -1,7 +1,8 @@
 /* From
 * https://github.com/krvarma/tinygps_sparkcore
-* [ ] Oled
+* [x] Oled
 * [x] LSM303DLHC
+* [ ] display odes
 * [ ] Posting with holdown logic
  */
 
@@ -10,17 +11,19 @@
 #include "math.h"
 #include "Adafruit_Sensor.h"
 #include "Adafruit_LSM303_U.h"
-#include"lib/streaming/firmware/spark-streaming.h"
-#include "math.h"
+#include "lib/Adafruit_SSD1306/Adafruit_SSD1306.h"
+#include "lib/streaming/firmware/spark-streaming.h"
 #include "lsmhelper.h"
 #include "lib/TinyGPS_SparkCore/firmware/TinyGPS.h"
 #include "myhelper.h"
+#include "oledhelper.h"
+
 
 
 
 
 TinyGPS tgps;  // Instatinate Tny GPS
-
+//Adafruit_SSD1306 display(OLED_RESET) done in myoled
 
 void setup(){
     Serial1.begin(9600);
@@ -36,17 +39,23 @@ void setup(){
     Particle.variable("project", FILENAME);
     Particle.variable("heading", heading);
 
+    getMyName();
+    oledInit();
     lsminit();
+
 }
 
 void loop(){
 
 gpsDispatch();
 lsmGetValues();
-
+oled1();
+ //getMyName();
+//Serial << System.deviceID() <<  " myname: " << myName << endl;
 
     delay(500);
 }
+// ************ FUNCTIONS ***************
 
 void gpsDispatch() {
   bool isValidGPS = false;
@@ -88,4 +97,23 @@ void gpsDispatch() {
       Serial << " . ";
       //sprintf(szInfo, "0.0,0.0");
   }
+}
+void oled1() {
+  display.setTextSize(2);
+  display.clearDisplay();
+  display.setCursor(5,16);
+  display << heading << endl;
+  display.setTextSize(1);
+  display.setCursor(1,32);
+  /*
+  display << "x: " << xAccl << endl;
+  display << "y: " << yAccl << endl;
+  display << "z: " << zAccl << endl;
+  */
+  display.display();
+}
+void getMyName() {
+  if( System.deviceID().compareTo("37001a000a47353137323334") == 0 ) myName = "bobcat_hunter";
+  if( System.deviceID().compareTo("2c0019000a47353137323334") == 0 ) myName = "regal_air";
+  if( System.deviceID().compareTo("350039001547353236343033") == 0 ) myName = "trackertwo";
 }

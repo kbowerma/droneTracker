@@ -2,7 +2,7 @@
 * https://github.com/krvarma/tinygps_sparkcore
 * [x] Oled
 * [x] LSM303DLHC
-* [ ] display odes
+* [ ] display modes
 * [ ] Posting with holdown logic
  */
 
@@ -38,10 +38,14 @@ void setup(){
     Particle.variable("version", MYVERSION);
     Particle.variable("project", FILENAME);
     Particle.variable("heading", heading);
+    Particle.function("setPage", setPage);
+    Particle.function("setSpThr", setSpThr);
+    Particle.function("setHDT", setHDT);
 
     getMyName();
     oledInit();
     lsminit();
+    nextPub = millis() + holdDownTimer * 1000;  // need to init first HDT
 
 }
 
@@ -49,14 +53,38 @@ void loop(){
 
 gpsDispatch();
 lsmGetValues();
-oled1();
- //getMyName();
-//Serial << System.deviceID() <<  " myname: " << myName << endl;
+oledDispatch(page);
+testPub();
+
 
     delay(500);
 }
 // ************ FUNCTIONS ***************
 
+int setPage(String command){
+  page = atoi(command);
+  return page;
+}
+int setSpThr(String command) {
+  speedThreshold = command.toFloat();
+  return 1;
+}
+int setHDT(String command) {
+  holdDownTimer = command.toInt();
+  //goPub();  //think this should be testPub
+  testPub();
+  nextPub = millis() + holdDownTimer * 1000;
+  return 1;
+}
+
+void oledDispatch(int page) {
+  if (page == 0 ) oled0();  // off
+  if (page == 1 ) oled1();  // info
+  if (page == 2 ) oled2();  // speed
+  if (page == 3 ) oled3();  // compas
+  if (page == 4 ) oled4();  // magnometer
+  if (page == 5 ) oled5();  // pub info
+}
 void gpsDispatch() {
   bool isValidGPS = false;
   for (unsigned long start = millis(); millis() - start < 1000;){
@@ -82,11 +110,12 @@ void gpsDispatch() {
        age = age;
        sats = tgps.satellites();
     if(serialDebug) {
-       Serial << "lat: " << clat << " lon " << clon;
+       Serial << "lat: " << String(clat) << " lon " << String(clon);
        Serial << " alt " << alt << " sats " << sats << " hdop " << hdop;
        Serial  << " speed "<< String(mph) <<" mph";
        Serial << " " << String(mps) <<" mps";
-       Serial << " age " << String(age)   << " heading " << heading << endl;
+       Serial << " age " << String(age)   << " heading " << heading;
+       Serial << " mRatio: " << movingRatio << endl;
 
     }
   }
@@ -98,24 +127,48 @@ void gpsDispatch() {
       //sprintf(szInfo, "0.0,0.0");
   }
 }
-void oled1() {
-  display.setTextSize(2);
-  display.clearDisplay();
-  display.setCursor(5,16);
-  display << heading << endl;
-  display.setTextSize(1);
-  display.setCursor(0,0);
-  display << "sats: " << sats << "  HDOP " << hdop << endl;
-  display << "     " << mph << "mph " << endl;
-  /*
-  display << "x: " << xAccl << endl;
-  display << "y: " << yAccl << endl;
-  display << "z: " << zAccl << endl;
-  */
-  display.display();
-}
 void getMyName() {
-  if( System.deviceID().compareTo("37001a000a47353137323334") == 0 ) myName = "bobcat_hunter";
-  if( System.deviceID().compareTo("2c0019000a47353137323334") == 0 ) myName = "regal_air";
-  if( System.deviceID().compareTo("350039001547353236343033") == 0 ) myName = "trackertwo";
+  if( System.deviceID().compareTo("37001a000a47353137323334") == 0 ) {
+    myName = "bobcat_hunter";
+    mongoid = "585c05f7fe76420004a44a0b";
+  }
+  if( System.deviceID().compareTo("2c0019000a47353137323334") == 0 ) {
+    myName = "regal_air";
+    mongoid = "58629f8a01a1100004e8d83d";
+  }
+  if( System.deviceID().compareTo("350039001547353236343033") == 0 ) {
+    myName = "Rusts";
+    mongoid = "584adbcfaebc030004a68a8d";
+  }
+}
+void testPub() {
+  if (mph > speedThreshold ) isMoving++;
+  if (mph < speedThreshold ) isStill++;
+  movingRatio = float(isMoving) / float(isStill);
+
+  // call goPub if timer expired && we know we are moving good.
+  if (millis() > nextPub )
+  {
+    if (mph > speedThreshold && movingRatio > 0.5 ) {
+    // yes pub
+      goPub();
+      nextPub = millis() + holdDownTimer * 1000;
+    }
+    // no pub
+    Serial << "no pub, speed: " << String(mph) << " MR " << String(movingRatio) << endl;
+    nextPub = millis() + holdDownTimer * 1000;
+  }
+}
+void goPub() {
+  //prepub
+
+  //pub
+  Particle.publish("t3", String( String(lat) + "," +String(lon)+","+String(mph)));
+
+  //postpub
+  //nextPub = millis() + holdDownTimer * 1000;  moved up to test
+  pubCount++;
+  isMoving = isStill = movingRatio = 1;
+
+
 }

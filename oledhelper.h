@@ -35,3 +35,93 @@ void oledInit() {
   display.display();
   delay(4000);
 }
+void oled0() {
+  display.clearDisplay();
+  display.display();
+}
+void oled1() {  // INFO
+  display.setTextSize(2);
+  display.clearDisplay();
+  display.setTextColor(BLACK,WHITE);
+  display.setCursor(0,0);
+  display << "  INFO  1";
+  // blue
+  display.setCursor(0,16);
+  display.setTextColor(WHITE, BLACK);
+  display.setTextSize(1);
+  display << String(WiFi.SSID()) << endl;
+
+  display << FILENAME << endl << MYVERSION << endl;
+  display << "sats: " << sats << endl;
+  display  << myName << endl;
+  display <<  mongoid << endl;
+
+
+  display.display();
+}
+void oled2() { // SPEED and Sats
+  display.setTextSize(4);
+  display.clearDisplay();
+  display.setCursor(5,16);
+  display << mph << " " << endl;
+  display.setTextSize(1);
+  display.setCursor(0,0);
+  display << "sats: " << sats << "  HDOP " << hdop << endl;
+  display << "     " << heading << " deg" << endl;
+  display.display();
+}
+void oled3() { // COMPASs
+  display.setTextSize(2);
+  display.clearDisplay();
+  display.setTextColor(BLACK,WHITE);
+  display.setCursor(4,0);
+  display << "COMPASS 3";
+  // blue
+  display.setCursor(0,16);
+  display.setTextColor(WHITE, BLACK);
+  display.setTextSize(2);
+  display << heading << endl;
+  display.setTextSize(1);
+  display << "x: " << ax << endl;
+  display << "y: " << ay << endl;
+  display << "z: " << az << endl;
+  display.display();
+}
+void oled4() { // MAGNOMETER
+  display.setTextSize(2);
+  display.clearDisplay();
+    display.setTextColor(BLACK,WHITE);
+  display.setCursor(0,0);
+  display << "MAGNOMET";
+  // blue
+  display.setCursor(0,16);
+  display.setTextColor(WHITE, BLACK);
+  display.setTextSize(2);
+  display << heading << endl;
+  display.setTextSize(1);
+  display << "MX: " << mx << endl;
+  display << "MY: " << my << endl;
+  display << "MZ: " << mz << endl;
+  display.display();
+}
+void oled5() { // Publish
+  display.setTextSize(2);
+  display.clearDisplay();
+    display.setTextColor(BLACK,WHITE);
+  display.setCursor(0,0);
+  display << "Publish 5";
+  // blue
+  display.setCursor(0,16);
+  display.setTextColor(WHITE, BLACK);
+  display.setTextSize(1);
+  display << "pub: " << pubCount << endl;
+  display << "moving: " << isMoving << endl;
+  display << "Still: " << isStill << endl;
+  display << "mRatio: " << movingRatio << endl;
+  display << "Pub in " << ( nextPub - millis())/1000 << endl;
+  display << "HDT: " << holdDownTimer;
+  display << " | MT " << speedThreshold;
+
+
+  display.display();
+}

@@ -13,6 +13,8 @@
 #include "Adafruit_LSM303_U.h"
 #include "lib/Adafruit_SSD1306/Adafruit_SSD1306.h"
 #include "lib/streaming/firmware/spark-streaming.h"
+#include "lib/HttpClient/firmware/HttpClient.h"
+#include "lib/SparkJson/firmware/SparkJson.h"
 #include "lsmhelper.h"
 #include "lib/TinyGPS_SparkCore/firmware/TinyGPS.h"
 #include "myhelper.h"
@@ -42,11 +44,16 @@ void setup(){
     Particle.function("setSpThr", setSpThr);
     Particle.function("setHDT", setHDT);
 
+
+
     getMyName();
     oledInit();
     lsminit();
     nextPub = millis() + holdDownTimer * 1000;  // need to init first HDT
 
+    request.port = 80;
+    request.hostname = "kb-dsp-server-dev.herokuapp.com";
+    request.path = String("/api/v1/drones/" + mongoid );
 }
 
 void loop(){
@@ -74,6 +81,15 @@ int setHDT(String command) {
   //goPub();  //think this should be testPub
   testPub();
   nextPub = millis() + holdDownTimer * 1000;
+  return 1;
+}
+int setMRT(String command) {
+  /* this sets the moving Ratio which is the number of isMoving
+  * vs isStill that happens withing the holdDownTimer
+  * for example is this is set to 0.5 then half of the polls
+  * have to be moving in order it to publish
+  */
+  movingRatioThreshold = command.toInt();
   return 1;
 }
 
@@ -115,7 +131,7 @@ void gpsDispatch() {
        Serial  << " speed "<< String(mph) <<" mph";
        Serial << " " << String(mps) <<" mps";
        Serial << " age " << String(age)   << " heading " << heading;
-       Serial << " mRatio: " << movingRatio << endl;
+       Serial << " mRatio: " << String(movingRatio) << endl;
 
     }
   }
@@ -147,28 +163,57 @@ void testPub() {
   movingRatio = float(isMoving) / float(isStill);
 
   // call goPub if timer expired && we know we are moving good.
-  if (millis() > nextPub )
-  {
-    if (mph > speedThreshold && movingRatio > 0.5 ) {
+  if (millis() > nextPub ) {
+    if (mph > speedThreshold && movingRatio > movingRatioThreshold ) {
     // yes pub
       goPub();
       nextPub = millis() + holdDownTimer * 1000;
-    }
+    } else {
     // no pub
     Serial << "no pub, speed: " << String(mph) << " MR " << String(movingRatio) << endl;
     nextPub = millis() + holdDownTimer * 1000;
   }
+    // Do this every cycle no mater what
+    isMoving = isStill = movingRatio = 1;
+  }
+
 }
 void goPub() {
   //prepub
 
   //pub
   Particle.publish("t3", String( String(lat) + "," +String(lon)+","+String(mph)));
-
+  if ( dspPublish ) gpsPublish("1");
   //postpub
   //nextPub = millis() + holdDownTimer * 1000;  moved up to test
   pubCount++;
-  isMoving = isStill = movingRatio = 1;
+  //isMoving = isStill = movingRatio = 1;  //moved up to the test
 
 
 }
+int gpsPublish(String command){
+
+        if ( command == "1"  ) {
+        request.body = generateRequestBody();
+        http.put(request, response, headers);
+        Serial << "Fnc call: http body: " << request.body << endl;
+        }
+        return 1;
+
+}
+String generateRequestBody() {
+  //Function to assembly JSON body payload
+     // A Dynamic Json buffer
+     DynamicJsonBuffer jsonBuffer;
+     JsonObject& obj = jsonBuffer.createObject();
+     char buf[500];
+     JsonVariant lat;
+     lat.set(clat, 6);
+     obj["lat"] = lat;
+     JsonVariant lng;
+     lng.set(clon, 6);
+     obj["lng"] = lng;
+     obj.printTo(buf, sizeof(buf));
+       return String(buf);
+
+ }

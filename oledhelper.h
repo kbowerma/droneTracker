@@ -115,8 +115,8 @@ void oled5() { // Publish
   display.setTextColor(WHITE, BLACK);
   display.setTextSize(1);
   display << "pub: " << pubCount << "  sats: " << sats << endl;
-  display << "moving: " << isMoving << " mph: " << mph << endl;
-  display << "Still: " << isStill << endl;
+  display << "mv: " << isMoving << " still: " << isStill << endl;
+  display << "mph: " << String(mph) << endl;
   display << "mRatio: " << movingRatio << endl;
   display << "Pub in " << ( nextPub - millis())/1000 << endl;
   display << "HDT: " << holdDownTimer;

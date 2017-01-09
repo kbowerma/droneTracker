@@ -37,12 +37,14 @@ void setup(){
     Particle.variable("mph", mph);
     Particle.variable("mps", mps);
     Particle.variable("HDOP", hdop);
+    Particle.variable("pubCount",pubCount);
     Particle.variable("version", MYVERSION);
     Particle.variable("project", FILENAME);
     Particle.variable("heading", heading);
     Particle.function("setPage", setPage);
     Particle.function("setSpThr", setSpThr);
     Particle.function("setHDT", setHDT);
+    Particle.function("gpsPublish", gpsPublish);
 
 
 
@@ -59,7 +61,7 @@ void setup(){
 void loop(){
 
 gpsDispatch();
-lsmGetValues();
+if (lsmEnabled) lsmGetValues();
 oledDispatch(page);
 testPub();
 
@@ -156,6 +158,10 @@ void getMyName() {
     myName = "Rusts";
     mongoid = "584adbcfaebc030004a68a8d";
   }
+  if( System.deviceID().compareTo("1a0038000247353137323334") == 0 ) {
+    myName = "Yetna";
+    mongoid = "5873b3d04cc7cf0004d0c3c9";
+  }
 }
 void testPub() {
   if (mph > speedThreshold ) isMoving++;
@@ -183,10 +189,11 @@ void goPub() {
 
   //pub
   Particle.publish("t3", String( String(lat) + "," +String(lon)+","+String(mph)));
-  if ( dspPublish ) gpsPublish("1");
+  if ( dspPublish == true ) gpsPublish("1");  // this does not ever seem to publish
+  // gpsPublish("1"); 
   //postpub
   //nextPub = millis() + holdDownTimer * 1000;  moved up to test
-  pubCount++;
+  //pubCount++;  // move to gpsPublish so I stroke the counter when I manual run it
   //isMoving = isStill = movingRatio = 1;  //moved up to the test
 
 
@@ -197,6 +204,7 @@ int gpsPublish(String command){
         request.body = generateRequestBody();
         http.put(request, response, headers);
         Serial << "Fnc call: http body: " << request.body << endl;
+        pubCount++;
         }
         return 1;
 

@@ -1,10 +1,10 @@
 /* Kyle Bowerman 12.29.2016
 *
 */
-#define MYVERSION "1.00.0103c"
+#define MYVERSION "1.01.0109b"
 #define FILENAME "trackerthree"
 
-bool serialDebug = true;
+bool serialDebug, lsmEnabled = true;
 bool dspPublish = true;
 
 

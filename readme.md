@@ -4,6 +4,10 @@ DroneTracker is an adaptation of Particle's Asset Tracker but primary using  the
 
 ![img_2963](https://cloud.githubusercontent.com/assets/1180747/21743262/16fe756c-d4c4-11e6-9b81-dcc6e507ade2.jpeg)
 
+>Version 2 with LM7805 voltage regulator and 500mAh 3S lipo
+
+![img_2972](https://cloud.githubusercontent.com/assets/1180747/21792889/781a6096-d6b2-11e6-8d3e-d191f10ce97c.JPG)
+
 
 ## BOM
 
@@ -21,7 +25,15 @@ The following buzzer/led are also under consideration for when the tracker flies
 
 ## Assembly notes
 
-## Test flight
+## Test flight 1
 On 1/6/2017 rig flew approximately 5 minutes and provide two updates to dsp.  ```speedThreshold``` was set to 4.5mph, update frequency (```holdDownTimer```) was set to 30 seconds and  ```movingRatioThreshold ``` set to 0.2.  Reading the particle variables it seemed like the speed was under the threshold (2.5mps) for the first few minutes of the flight not resulting in publishing location. I need to look at the speed calculation which I think is weighted over last few reading so it takes time to rise and I also notice that it takes a few minutes to settle.   
 
 ![screen shot 2017-01-07 at 10 25 45 am](https://cloud.githubusercontent.com/assets/1180747/21743256/03d9552e-d4c4-11e6-9926-93ec6632baea.png)
+
+## Test Drive 14 and 15
+
+Test drive 14 performed on 1/9/2016 included 30 second updates (HDT) and 4.5mph Moving threshold - 17 updates
+![screen shot 2017-01-09 at 3 38 03 pm](https://cloud.githubusercontent.com/assets/1180747/21784547/ae423be8-d681-11e6-823c-5d85712beecf.png)
+
+Test drive 15 upd' the update (HDT threshold to 20 seoncds) and had a moving threshold of 4.5mph, 15 points are not included due to zoom factor.   This trip included a ~10 minute stop which did not include any updates.
+<img width="1646" alt="screen shot 2017-01-09 at 7 20 58 pm" src="https://cloud.githubusercontent.com/assets/1180747/21790304/e827f734-d6a0-11e6-8398-f382817bb8d4.png">

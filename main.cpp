@@ -41,12 +41,13 @@ void setup(){
     Particle.variable("version", MYVERSION);
     Particle.variable("project", FILENAME);
     Particle.variable("heading", heading);
+    Particle.variable("alarm", NFZalarm);
     Particle.function("setPage", setPage);
     Particle.function("setSpThr", setSpThr);
     Particle.function("setHDT", setHDT);
     Particle.function("gpsPublish", gpsPublish);
 
-
+    pinMode(D7, OUTPUT); // built in oled
 
     getMyName();
     oledInit();
@@ -55,7 +56,7 @@ void setup(){
 
     request.port = 80;
     request.hostname = "kb-dsp-server-dev.herokuapp.com";
-    request.path = String("/api/v1/drones/" + mongoid );
+    request.path = String("/api/v1/drones/" + mongoid +"?returnNFZ=true&nfzFields=id");
 }
 
 void loop(){
@@ -64,6 +65,7 @@ gpsDispatch();
 if (lsmEnabled) lsmGetValues();
 oledDispatch(page);
 testPub();
+oledAlarm();
 
 
     delay(500);
@@ -190,7 +192,7 @@ void goPub() {
   //pub
   Particle.publish("t3", String( String(lat) + "," +String(lon)+","+String(mph)));
   if ( dspPublish == true ) gpsPublish("1");  // this does not ever seem to publish
-  // gpsPublish("1"); 
+  // gpsPublish("1");
   //postpub
   //nextPub = millis() + holdDownTimer * 1000;  moved up to test
   //pubCount++;  // move to gpsPublish so I stroke the counter when I manual run it
@@ -204,6 +206,36 @@ int gpsPublish(String command){
         request.body = generateRequestBody();
         http.put(request, response, headers);
         Serial << "Fnc call: http body: " << request.body << endl;
+        Serial << "RESPONSE:  "  << endl << response.body << endl;
+        //Serial << endl << endl << "NFZ "  << response.body.noFlyZones << endl << endl;
+
+        /*
+
+        StaticJsonBuffer<1200> jsonBuffer;
+        char mybuff[1200];
+
+         strncpy(mybuff,response.body,strlen(response.body)-1);
+
+        JsonObject& root = jsonBuffer.parseObject(mybuff);
+
+        const char* myNFZ = root["noFlyZones"];
+
+        Serial << endl << "one " << sizeof(root["noFlyZones"]) << endl;
+        //Serial << endl << "two " << String(root["noFlyZones"]) << endl;
+        Serial << endl << "three " << String(myNFZ) << endl;
+
+        // None of the above works
+        */
+        int nfzIndex = response.body.indexOf("noFlyZones");
+        String NFZString = response.body.substring(nfzIndex);
+        // Serial << "NFZ: " << response.body.substring(nfzIndex) << endl;
+        Serial << "NFZ: " << NFZString << endl;
+        //Serial << "the magic index of noFlyZones is: " << response.body.indexOf("noFlyZones");
+
+        if ( NFZString.length() > 15 ) setNFZAlarm("1");  // set alarm
+        if ( NFZString.length() < 16 ) setNFZAlarm("0");  // Clear Alarm
+
+        Serial << "NFZ length is: " << NFZString.length();
         pubCount++;
         }
         return 1;
@@ -225,3 +257,15 @@ String generateRequestBody() {
        return String(buf);
 
  }
+int setNFZAlarm(String command) {
+  if ( atoi(command) == 0 ) { // clear alarm
+    NFZalarm = 0;
+    digitalWrite(D7, LOW);  //turn off built in led
+    return 0;
+  }
+  if ( atoi(command) == 1 ) { // clear alarm
+    NFZalarm = 1;
+    digitalWrite(D7, HIGH);  //turn on built in led
+    return 1;
+  }
+}

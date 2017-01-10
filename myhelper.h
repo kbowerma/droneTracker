@@ -1,8 +1,8 @@
 /* Kyle Bowerman 12.29.2016
 *
 */
-#define MYVERSION "1.01.0109b"
-#define FILENAME "trackerthree"
+#define MYVERSION "1.01.0109c"
+#define FILENAME "droneTracker"
 
 bool serialDebug, lsmEnabled = true;
 bool dspPublish = true;
@@ -11,6 +11,7 @@ bool dspPublish = true;
 float lat, lon, movingRatio;
 float movingRatioThreshold = 0.2;
 int sats;
+int NFZalarm = 0;
 int page = 5, pubCount = 0, holdDownTimer = 30;
 double clat, clon, mph, mps, alt,  hdop;
 double speedThreshold = 4.5;
@@ -48,4 +49,5 @@ void nextPage();
 void testPub();
 void goPub ();
 int gpsPublish(String command);
+int setNFZAlarm(String command);
 String generateRequestBody();

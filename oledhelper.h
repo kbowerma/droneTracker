@@ -121,7 +121,16 @@ void oled5() { // Publish
   display << "Pub in " << ( nextPub - millis())/1000 << endl;
   display << "HDT: " << holdDownTimer;
   display << " | MT " << speedThreshold;
+  display.display();
 
 
   display.display();
+}
+void oledAlarm() { //show the alarm status in the upper right
+  display.setTextSize(2);
+  display.setCursor(116,0);
+  display << NFZalarm;
+  display.display();
+  display.setTextSize(1); // turn it back to the small size
+
 }

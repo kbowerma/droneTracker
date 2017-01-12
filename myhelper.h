@@ -1,12 +1,13 @@
 /* Kyle Bowerman 12.29.2016
 *
 */
-#define MYVERSION "2.00.0111"
+#define MYVERSION "2.00.0112c"
 #define FILENAME "droneTracker"
 // IMPORTANT: Set pixel COUNT, PIN and TYPE
 #define PIXEL_COUNT 8
 #define PIXEL_PIN D2
 #define PIXEL_TYPE WS2812B
+#define SLOW_BELT_TIMER 500
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
@@ -27,6 +28,7 @@ unsigned long age, lastPub, nextPub;
 unsigned long isMoving = 1, isStill = 1;
 String myName = " not set";
 String mongoid;
+uint32_t nextGPSCheck;
 
 http_header_t headers[] = {
       { "Content-Type", "application/json" },

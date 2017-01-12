@@ -66,25 +66,38 @@ void setup(){
     request.port = 80;
     request.hostname = "kb-dsp-server-dev.herokuapp.com";
     request.path = String("/api/v1/drones/" + mongoid +"?returnNFZ=true&nfzFields=id");
+
+    nextGPSCheck = millis() + SLOW_BELT_TIMER;
+
 }
 
 void loop(){
 
-gpsDispatch();
-if (lsmEnabled) lsmGetValues();
-oledDispatch(page);
-testPub();
-oledAlarm();
+
+
+if (millis() > nextGPSCheck ) {  // CHECK THE GPS LOOP EVERY SLOW_BELT_TIMER
+
+  gpsDispatch();
+  if (lsmEnabled) lsmGetValues();
+  oledDispatch(page);
+  testPub();
+  oledAlarm();
+  nextGPSCheck = millis() + SLOW_BELT_TIMER;
+}
 
 if ( flasher == true ) {
+  // 120ms
  colorWipe(strip.Color(255, 0, 0), 50); // Red
  colorWipe(strip.Color(255, 255, 255), 20); // white?
  colorWipe(strip.Color(0, 0, 255), 50); // Blue
  colorWipe(strip.Color(0, 0, 0), 1); // off
 
+  // was 50 20 50
 }
 
-    delay(500);
+
+
+    //delay(500); replaced by SLOW_BELT_TIMER logic
 }
 
 

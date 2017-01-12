@@ -1,16 +1,26 @@
 /* Kyle Bowerman 12.29.2016
 *
 */
-#define MYVERSION "1.01.0109b"
-#define FILENAME "trackerthree"
+#define MYVERSION "2.00.0112c"
+#define FILENAME "droneTracker"
+// IMPORTANT: Set pixel COUNT, PIN and TYPE
+#define PIXEL_COUNT 8
+#define PIXEL_PIN D2
+#define PIXEL_TYPE WS2812B
+#define SLOW_BELT_TIMER 500
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
+
 
 bool serialDebug, lsmEnabled = true;
 bool dspPublish = true;
+bool flasher = false;
 
 
 float lat, lon, movingRatio;
 float movingRatioThreshold = 0.2;
 int sats;
+int NFZalarm = 0;
 int page = 5, pubCount = 0, holdDownTimer = 30;
 double clat, clon, mph, mps, alt,  hdop;
 double speedThreshold = 4.5;
@@ -18,6 +28,7 @@ unsigned long age, lastPub, nextPub;
 unsigned long isMoving = 1, isStill = 1;
 String myName = " not set";
 String mongoid;
+uint32_t nextGPSCheck;
 
 http_header_t headers[] = {
       { "Content-Type", "application/json" },
@@ -48,4 +59,8 @@ void nextPage();
 void testPub();
 void goPub ();
 int gpsPublish(String command);
+int setNFZAlarm(String command);
 String generateRequestBody();
+void colorWipe(uint32_t c, uint8_t wait);
+int setHorn(String command);
+int setFlasher(String command);

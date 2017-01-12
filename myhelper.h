@@ -1,11 +1,19 @@
 /* Kyle Bowerman 12.29.2016
 *
 */
-#define MYVERSION "1.01.0109c"
+#define MYVERSION "2.00.0111"
 #define FILENAME "droneTracker"
+// IMPORTANT: Set pixel COUNT, PIN and TYPE
+#define PIXEL_COUNT 8
+#define PIXEL_PIN D2
+#define PIXEL_TYPE WS2812B
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
+
 
 bool serialDebug, lsmEnabled = true;
 bool dspPublish = true;
+bool flasher = false;
 
 
 float lat, lon, movingRatio;
@@ -51,3 +59,6 @@ void goPub ();
 int gpsPublish(String command);
 int setNFZAlarm(String command);
 String generateRequestBody();
+void colorWipe(uint32_t c, uint8_t wait);
+int setHorn(String command);
+int setFlasher(String command);

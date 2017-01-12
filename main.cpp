@@ -2,8 +2,12 @@
 * https://github.com/krvarma/tinygps_sparkcore
 * [x] Oled
 * [x] LSM303DLHC
-* [ ] display modes
-* [ ] Posting with holdown logic
+* [x] display modes
+* [x] Posting with holdown logic
+* [x] Siren
+* [ ] Slow belt
+* [ ] Logic to stop pub when loose fix
+* [ ] check lsm hardware exists
  */
 
 #include "application.h"
@@ -15,11 +19,11 @@
 #include "lib/streaming/firmware/spark-streaming.h"
 #include "lib/HttpClient/firmware/HttpClient.h"
 #include "lib/SparkJson/firmware/SparkJson.h"
+#include "neopixel.h"
 #include "lsmhelper.h"
 #include "lib/TinyGPS_SparkCore/firmware/TinyGPS.h"
 #include "myhelper.h"
 #include "oledhelper.h"
-
 
 
 
@@ -48,6 +52,11 @@ void setup(){
     Particle.function("gpsPublish", gpsPublish);
 
     pinMode(D7, OUTPUT); // built in oled
+    strip.begin();
+    strip.show(); // Initialize all pixels to 'off'
+    pinMode(D3, OUTPUT);
+    Particle.function("horn",setHorn);
+    Particle.function("flasher",setFlasher);
 
     getMyName();
     oledInit();
@@ -67,9 +76,21 @@ oledDispatch(page);
 testPub();
 oledAlarm();
 
+if ( flasher == true ) {
+ colorWipe(strip.Color(255, 0, 0), 50); // Red
+ colorWipe(strip.Color(255, 255, 255), 20); // white?
+ colorWipe(strip.Color(0, 0, 255), 50); // Blue
+ colorWipe(strip.Color(0, 0, 0), 1); // off
+
+}
 
     delay(500);
 }
+
+
+
+
+
 // ************ FUNCTIONS ***************
 
 int setPage(String command){
@@ -261,11 +282,44 @@ int setNFZAlarm(String command) {
   if ( atoi(command) == 0 ) { // clear alarm
     NFZalarm = 0;
     digitalWrite(D7, LOW);  //turn off built in led
+    setHorn("0");
+    setFlasher("0");
     return 0;
   }
   if ( atoi(command) == 1 ) { // clear alarm
     NFZalarm = 1;
     digitalWrite(D7, HIGH);  //turn on built in led
+    setHorn("1");
+    setFlasher("1");
     return 1;
   }
+}
+
+void colorWipe(uint32_t c, uint8_t wait) {
+  for(uint16_t i=0; i<strip.numPixels(); i++) {
+    strip.setPixelColor(i, c);
+    strip.show();
+    delay(wait);
+  }
+}
+int setHorn(String command) {
+    if ( atoi(command) == 0 ) {
+        digitalWrite(D3, LOW); //turn off alarm
+        return 0;
+    }
+        if ( atoi(command) == 1 ) {
+        digitalWrite(D3, HIGH); //turn off alarm
+        return 1;
+    }
+}
+int setFlasher(String command) {
+        if ( atoi(command) == 0 ) {  // turn off
+        flasher = false;
+        //strip.Color(0, 0, 0);
+        return 0;
+    }
+        if ( atoi(command) == 1 ) {  // turn on
+        flasher = true;
+        return 1;
+    }
 }

@@ -4,9 +4,17 @@ DroneTracker is an adaptation of Particle's Asset Tracker but primary using  the
 
 ![img_2963](https://cloud.githubusercontent.com/assets/1180747/21743262/16fe756c-d4c4-11e6-9b81-dcc6e507ade2.jpeg)
 
+---
+
 >Version 2 with LM7805 voltage regulator and 500mAh 3S lipo
 
 ![img_2972](https://cloud.githubusercontent.com/assets/1180747/21792889/781a6096-d6b2-11e6-8d3e-d191f10ce97c.JPG)
+
+---
+
+>Version 3 with tail lights on bread board
+
+![img_2978](https://cloud.githubusercontent.com/assets/1180747/21911359/1164223e-d8e6-11e6-8847-68ccdfb94b1e.JPG)
 
 
 ## BOM
@@ -16,14 +24,19 @@ DroneTracker is an adaptation of Particle's Asset Tracker but primary using  the
 3. [128x64 Oled LCD](https://www.amazon.com/gp/product/B01HEBIJKK/ref=oh_aui_detailpage_o02_s00?ie=UTF8&psc=1)
 4. [Particle Photon](https://store.particle.io/collections/photon)
 5. [SparkFun Solder-able Breadboard](https://www.sparkfun.com/products/12070)
-6. [Female Headers](https://www.amazon.com/gp/product/B01DLX6RSQ) optional
+6. [Female Headers](https://www.amazon.com/gp/product/B01DLX6RSQ)
+6.  [Usmile® 2 in 1 WS2812B LED And 5V Active Buzzer For FPV Quadcopter NAZE32 Skyline32 SPRaciangF3(CleanFlight) Flight Controller](https://www.amazon.com/gp/product/B019UVHWMS) **Use this one**
+7. [5V/12V Mini BEC](https://www.amazon.com/gp/product/B018I3S5SY/ref=oh_aui_detailpage_o01_s00?ie=UTF8&psc=1)  **Use this to drop down a 2S or 3S lipo to 5V to power Vin of the photon and the tail light/buzzer.   Use the 3.3v Pin on the photon to power the GPS, oled and Accelerometer
+8.  [N-channel power MOSFET - 30V / 60A](https://www.adafruit.com/products/355)  This mosfet allows you to draw power from the BEC but switch from the Photon.
+
 
 ## Additional Hardware Considerations
 The following buzzer/led are also under consideration for when the tracker flies into a no fly zone:
+
 1.  [Usmile Dual Modes (FC mode& TX Mode) 2 in 1 WS2812B LED Tail light And 5V loud Buzzer For FPV Quadcopter racing](https://www.amazon.com/gp/product/B01MG3ZWCZ)
-2.  [Usmile® 2 in 1 WS2812B LED And 5V Active Buzzer For FPV Quadcopter NAZE32 Skyline32 SPRaciangF3(CleanFlight) Flight Controller](https://www.amazon.com/gp/product/B019UVHWMS)
 
 ## Assembly notes
+
 
 ## Test flight 1
 On 1/6/2017 rig flew approximately 5 minutes and provide two updates to dsp.  ```speedThreshold``` was set to 4.5mph, update frequency (```holdDownTimer```) was set to 30 seconds and  ```movingRatioThreshold ``` set to 0.2.  Reading the particle variables it seemed like the speed was under the threshold (2.5mps) for the first few minutes of the flight not resulting in publishing location. I need to look at the speed calculation which I think is weighted over last few reading so it takes time to rise and I also notice that it takes a few minutes to settle.   

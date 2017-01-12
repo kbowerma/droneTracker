@@ -37,6 +37,38 @@ The following buzzer/led are also under consideration for when the tracker flies
 
 ## Assembly notes
 
+- The buzzer will horn during bootup since pin is floating but a 10k resistor across D3 and ground will fix that.
+- the GPS should get a fix after a few minutes if it is outside or in the dashboard or the car.  However it will struggle indoors.   To aid in development you can get the [antenna](https://www.adafruit.com/products/960) and [SMA to uFL adaptor](https://www.adafruit.com/products/851) from Adafruit 
+
+***Hookup guide***
+
+Photon pin |Device | Device  Pin
+----| ------- | ----| -------
+VIN| IBEC / volt reg | +
+GND| IBEC / volt reg  | -
+Tx| GPS | Rx
+Rx| GPS | Tx
+WKP| - |
+DAC| - |
+A5| - |
+A4| - |
+A3| - |
+A2| - |
+A1| - |
+A0| - |
+3v3 | OLED/GPS | VIN
+RST | -
+VBAT | -
+GND | OLED/GPS |gnd
+D7 | -
+D6 | -
+D5 | -
+D4 | -
+D3 | MOSFET Gate | 2 (buzzer- MOSFET Drain)
+D2 | tail lights | DIN
+D1 | OLED/Alt | SCL
+D0 | OLED/Alt | SDA
+
 
 ## Test flight 1
 On 1/6/2017 rig flew approximately 5 minutes and provide two updates to dsp.  ```speedThreshold``` was set to 4.5mph, update frequency (```holdDownTimer```) was set to 30 seconds and  ```movingRatioThreshold ``` set to 0.2.  Reading the particle variables it seemed like the speed was under the threshold (2.5mps) for the first few minutes of the flight not resulting in publishing location. I need to look at the speed calculation which I think is weighted over last few reading so it takes time to rise and I also notice that it takes a few minutes to settle.   

@@ -16,6 +16,37 @@ DroneTracker is an adaptation of Particle's Asset Tracker but primary using  the
 
 ![img_2978](https://cloud.githubusercontent.com/assets/1180747/21911359/1164223e-d8e6-11e6-8847-68ccdfb94b1e.JPG)
 
+---
+
+
+
+
+The particle mobile app allows for the device inspector to show all the particle variables and update the configuration variables via Particle.functions like: ```oled page, speed threshold for update, Update frequency, move ratio , Force Publish, Toggle Horn, Toggle Lights```  
+
+
+
+ ![img_2980](https://cloud.githubusercontent.com/assets/1180747/21912899/954d4258-d8ee-11e6-8eed-725266389036.PNG)
+
+Type |Name | Purpose
+ ----| ------- | ----|
+variable | lat | current GPS Latitude
+variable | lon | current GPS Longitude
+variable | alt | current GPS Altitude
+variable | sats | number of Satellites
+variable | mph | derived speed in miles per hour
+variable | mps | derived speed in meters per seconds
+variable | HDOP | Horizontal Degree of Precision
+variable | pubCount| number or time location published to dsp since last reboot
+variable | version | version defined in header file
+variable | project | project (FILE) name defined in header file
+variable | heading | LSM303 heading
+variable | alarm | is in alarm state NFZ violation
+function | setPage | sets the oled page [0-5]
+function | setSpThr| sets speed threshold, the speed value (in mph) which counts a a "move" if exceeded or "still" if under.  Related to move ratio. (the number of moves/still during a cycle to determine if a gps update is necessary)
+function | setHDT | Hold Down timer.  Frequency of update candidacy in seconds
+function | gpsPublish | Forces a GPS update to the GPS
+
+
 
 ## BOM
 
@@ -38,7 +69,7 @@ The following buzzer/led are also under consideration for when the tracker flies
 ## Assembly notes
 
 - The buzzer will horn during bootup since pin is floating but a 10k resistor across D3 and ground will fix that.
-- the GPS should get a fix after a few minutes if it is outside or in the dashboard or the car.  However it will struggle indoors.   To aid in development you can get the [antenna](https://www.adafruit.com/products/960) and [SMA to uFL adaptor](https://www.adafruit.com/products/851) from Adafruit 
+- the GPS should get a fix after a few minutes if it is outside or in the dashboard or the car.  However it will struggle indoors.   To aid in development you can get the [antenna](https://www.adafruit.com/products/960) and [SMA to uFL adaptor](https://www.adafruit.com/products/851) from Adafruit
 
 ***Hookup guide***
 

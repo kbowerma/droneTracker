@@ -46,6 +46,25 @@ function | setSpThr| sets speed threshold, the speed value (in mph) which counts
 function | setHDT | Hold Down timer.  Frequency of update candidacy in seconds
 function | gpsPublish | Forces a GPS update to the GPS
 
+### Bottom Layer.
+
+Tail lights
+
+lts | BAD | pin | i2c harness color |  row | to
+----|--------------|-----|-------|-------------|-------
+GND | black | 2 | white  | 2
+VCC | red | 4 | grey | 4 | G1 (Vcc)-Vin
+DIN | yellow | 3 |  black |3
+BUZZ | blue | 1 | red | 1
+
+lts |  color | pin | path
+----|--------------|-----|-------|-------------|-------
+GND | black | 3 | FET Source (row 10) | GND (2)
+VCC | red | 1 | Vin (row 1)
+DIN | white | 2 |  Row 25 | Photon D2
+BUZZ | Grey | 4 |
+
+
 
 
 ## BOM

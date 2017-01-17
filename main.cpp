@@ -192,11 +192,19 @@ void getMyName() {
   }
   if( System.deviceID().compareTo("350039001547353236343033") == 0 ) {
     myName = "Rusts";
-    mongoid = "584adbcfaebc030004a68a8d";
+    mongoid = "Fried";
   }
   if( System.deviceID().compareTo("1a0038000247353137323334") == 0 ) {
     myName = "Yetna";
     mongoid = "5873b3d04cc7cf0004d0c3c9";
+  }
+  if( System.deviceID().compareTo("290031000f47353136383631") == 0 ) {
+    myName = "Susitna";
+    mongoid = "587e3870d194300004d5c51d";
+  }
+  if( System.deviceID().compareTo("32001f001551353531343431") == 0 ) {
+    myName = "Whisky";
+    mongoid = "587e4f836772ed0004d88584";
   }
 }
 void testPub() {
@@ -240,6 +248,7 @@ int gpsPublish(String command){
         request.body = generateRequestBody();
         http.put(request, response, headers);
         Serial << "Fnc call: http body: " << request.body << endl;
+        Serial << "Request.path: " << request.path << endl;
         Serial << "RESPONSE:  "  << endl << response.body << endl;
         //Serial << endl << endl << "NFZ "  << response.body.noFlyZones << endl << endl;
 

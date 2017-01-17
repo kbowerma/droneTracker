@@ -65,7 +65,8 @@ void setup(){
 
     request.port = 80;
     request.hostname = "kb-dsp-server-dev.herokuapp.com";
-    request.path = String("/api/v1/drones/" + mongoid +"?returnNFZ=true&nfzFields=id");
+    // request.path = String("/api/v1/drones/" + mongoid +"?returnNFZ=true&nfzFields=id");  // by id
+    request.path = String("/api/v1/drones/position/" + System.deviceID() +"?returnNFZ=true&nfzFields=id"); 
 
     nextGPSCheck = millis() + SLOW_BELT_TIMER;
 

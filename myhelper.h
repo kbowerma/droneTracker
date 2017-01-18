@@ -1,7 +1,7 @@
 /* Kyle Bowerman 12.29.2016
 *
 */
-#define MYVERSION "2.03.0117sw"
+#define MYVERSION "2.03.0117sw-OF"
 #define FILENAME "droneTracker"
 // IMPORTANT: Set pixel COUNT, PIN and TYPE
 #define PIXEL_COUNT 8

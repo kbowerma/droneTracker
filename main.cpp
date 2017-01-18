@@ -66,7 +66,7 @@ void setup(){
     request.port = 80;
     request.hostname = "kb-dsp-server-dev.herokuapp.com";
     // request.path = String("/api/v1/drones/" + mongoid +"?returnNFZ=true&nfzFields=id");  // by id
-    request.path = String("/api/v1/drones/position/" + System.deviceID() +"?returnNFZ=true&nfzFields=id"); 
+    request.path = String("/api/v1/drones/position/" + System.deviceID() +"?returnNFZ=true&nfzFields=id");
 
     nextGPSCheck = millis() + SLOW_BELT_TIMER;
 
@@ -297,6 +297,19 @@ String generateRequestBody() {
      JsonVariant lng;
      lng.set(clon, 6);
      obj["lng"] = lng;
+
+     JsonVariant myalt;
+     myalt.set(alt,6);
+     obj["altitude"] = myalt;
+
+     JsonVariant myheading;
+     myheading.set(heading,6);
+     obj["heading"] = myheading;
+
+     JsonVariant myspeed;
+     myspeed.set(mph,6);
+     obj["speed"] = myspeed;
+
      obj.printTo(buf, sizeof(buf));
        return String(buf);
 

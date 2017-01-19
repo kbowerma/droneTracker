@@ -68,7 +68,7 @@ void setup(){
     // request.path = String("/api/v1/drones/" + mongoid +"?returnNFZ=true&nfzFields=id");  // by id
     //request.path = String("/api/v1/drones/position/" + System.deviceID() +"?returnNFZ=true&nfzFields=id"); // by serial number
     // This one will also return the nearest drones
-    request.path = String("/api/v1/drones/position/" + System.deviceID() +"?returnNFZ=true&nfzFields=id&nearDronesMaxDist=25&nearDroneFields=status,distance,name");
+    request.path = String("/api/v1/drones/position/" + System.deviceID() +"?returnNFZ=true&nfzFields=description&nearDronesMaxDist=25&nearDroneFields=status,distance,name");
     // {{URL}}/drones/position/2c0019000a47353137323334?returnNFZ=true&nfzFields=id&nearDronesMaxDist=25&nearDroneFields=distance,name
 
     nextGPSCheck = millis() + SLOW_BELT_TIMER;
@@ -94,11 +94,9 @@ if ( flasher == true ) {
  colorWipe(strip.Color(255, 0, 0), 50); // Red
  colorWipe(strip.Color(255, 255, 255), 20); // white?
  colorWipe(strip.Color(0, 0, 255), 50); // Blue
- colorWipe(strip.Color(0, 0, 0), 1); // off
-
-  // was 50 20 50
+ //colorWipe(strip.Color(0, 0, 0), 1); // off
+     // was 50 20 50
 }
-
 
 
     //delay(500); replaced by SLOW_BELT_TIMER logic
@@ -253,43 +251,16 @@ int gpsPublish(String command){
         http.put(request, response, headers);
         Serial << "Fnc call: http body: " << request.body << endl;
         Serial << "Request.path: " << request.path << endl;
+        Serial << "Response size " << response.body.length() << endl;
         Serial << "RESPONSE:  "  << endl << response.body << endl;
-        //Serial << endl << endl << "NFZ "  << response.body.noFlyZones << endl << endl;
 
-        /*
 
-        StaticJsonBuffer<1200> jsonBuffer;
-        char mybuff[1200];
-
-         strncpy(mybuff,response.body,strlen(response.body)-1);
-
-        JsonObject& root = jsonBuffer.parseObject(mybuff);
-
-        const char* myNFZ = root["noFlyZones"];
-
-        Serial << endl << "one " << sizeof(root["noFlyZones"]) << endl;
-        //Serial << endl << "two " << String(root["noFlyZones"]) << endl;
-        Serial << endl << "three " << String(myNFZ) << endl;
-
-        // None of the above works
-        */
-
-        /*------------- re enable here
-        int nfzIndex = response.body.indexOf("noFlyZones");
-        String NFZString = response.body.substring(nfzIndex);
-        // Serial << "NFZ: " << response.body.substring(nfzIndex) << endl;
-        Serial << "NFZ: " << NFZString << endl;
-        //Serial << "the magic index of noFlyZones is: " << response.body.indexOf("noFlyZones");
-
-        if ( NFZString.length() > 15 ) setNFZAlarm("1");  // set alarm
-        if ( NFZString.length() < 16 ) setNFZAlarm("0");  // Clear Alarm
-        *--------------------*/
-        char charBuf[2000];
-        response.body.toCharArray(charBuf, 2000);
+        char charBuf[2200];
+        response.body.toCharArray(charBuf, 2200);
 
         char json[] = {};
         strcpy(json, charBuf);
-        StaticJsonBuffer<2000> jsonBuffer;
+        StaticJsonBuffer<2200> jsonBuffer;
         JsonObject& root = jsonBuffer.parseObject(json);
         // Test if parsing succeeds.
         if (!root.success()) {
@@ -297,41 +268,21 @@ int gpsPublish(String command){
 
         }
 
-
-
-
-        //Serial << "NFZ length is: " << NFZString.length();
-        const char* responseSerialNumber  = root["serialNumber"];
-        Serial << "the parse serialNumber is:  "  << responseSerialNumber << endl;
-
-
         if (root["noFlyZones"].is<JsonArray&>())
         {
-            Serial << "noFLyZones is an Array " << root["noFlyZones"].size() << endl;;
-            JsonObject& data =  root["noFlyZones"];
-            for ( int i = 0; i< root["noFlyZones"].size(); i++ ) {
-              Serial << "the noFlyZone array index is  " << i << endl;
-            }
+          // Fancy parsing stuff to serial
+          JsonArray& nfzJsonArray = root["noFlyZones"];
+          for (int i = 0; i < nfzJsonArray.size(); i++){
+          const char * description = nfzJsonArray[i]["description"];
+          const char * id = nfzJsonArray[i]["id"];
+          Serial << "Description " << i+1 << ": " << description << endl;
+          Serial << "Id " << i+1 << ": " << id << endl;
+          }
         }
 
-        if (root["nearestDrones"].is<JsonArray&>())
-        {
-            Serial << "nearestDrones is an Array " << root["nearestDrones"].size() << endl; ;
-            JsonObject& data =  root["nearestDrones"];
-            for ( int i = 0; i< root["nearestDrones"].size(); i++ ) {
-              Serial << "the nearestDrones array index is  " << i << endl;
-            }
-        }
+        if ( root["noFlyZones"].size() > 0 ) setNFZAlarm("1");  // set alarm
+        if ( root["noFlyZones"].size() == 0 ) setNFZAlarm("0");  // Clear Alarm
 
-
-
-
-
-
-        //JsonArray& noFlyZonesArray = root["noFlyZones"].asArray();
-        //Serial << " the no fly zone  length is   "  << *noFlyZonesArray[0] << endl;
-        //const const* myflyzone = root["noFlyZones"];
-        //Serial << "NFZsize  "  << noFlyZonesArray.sizeof();
 
 
 
@@ -406,7 +357,7 @@ int setHorn(String command) {
 int setFlasher(String command) {
         if ( atoi(command) == 0 ) {  // turn off
         flasher = false;
-        //strip.Color(0, 0, 0);
+        colorWipe(strip.Color(0, 0, 0), 1);
         return 0;
     }
         if ( atoi(command) == 1 ) {  // turn on

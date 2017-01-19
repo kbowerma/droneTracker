@@ -65,7 +65,11 @@ void setup(){
 
     request.port = 80;
     request.hostname = "kb-dsp-server-dev.herokuapp.com";
-    request.path = String("/api/v1/drones/" + mongoid +"?returnNFZ=true&nfzFields=id");
+    // request.path = String("/api/v1/drones/" + mongoid +"?returnNFZ=true&nfzFields=id");  // by id
+    //request.path = String("/api/v1/drones/position/" + System.deviceID() +"?returnNFZ=true&nfzFields=id"); // by serial number
+    // This one will also return the nearest drones
+    request.path = String("/api/v1/drones/position/" + System.deviceID() +"?returnNFZ=true&nfzFields=description&nearDronesMaxDist=25&nearDroneFields=status,distance,name");
+    // {{URL}}/drones/position/2c0019000a47353137323334?returnNFZ=true&nfzFields=id&nearDronesMaxDist=25&nearDroneFields=distance,name
 
     nextGPSCheck = millis() + SLOW_BELT_TIMER;
 
@@ -90,11 +94,9 @@ if ( flasher == true ) {
  colorWipe(strip.Color(255, 0, 0), 50); // Red
  colorWipe(strip.Color(255, 255, 255), 20); // white?
  colorWipe(strip.Color(0, 0, 255), 50); // Blue
- colorWipe(strip.Color(0, 0, 0), 1); // off
-
-  // was 50 20 50
+ //colorWipe(strip.Color(0, 0, 0), 1); // off
+     // was 50 20 50
 }
-
 
 
     //delay(500); replaced by SLOW_BELT_TIMER logic
@@ -249,36 +251,41 @@ int gpsPublish(String command){
         http.put(request, response, headers);
         Serial << "Fnc call: http body: " << request.body << endl;
         Serial << "Request.path: " << request.path << endl;
+        Serial << "Response size " << response.body.length() << endl;
         Serial << "RESPONSE:  "  << endl << response.body << endl;
-        //Serial << endl << endl << "NFZ "  << response.body.noFlyZones << endl << endl;
 
-        /*
 
-        StaticJsonBuffer<1200> jsonBuffer;
-        char mybuff[1200];
+        char charBuf[2200];
+        response.body.toCharArray(charBuf, 2200);
 
-         strncpy(mybuff,response.body,strlen(response.body)-1);
+        char json[] = {};
+        strcpy(json, charBuf);
+        StaticJsonBuffer<2200> jsonBuffer;
+        JsonObject& root = jsonBuffer.parseObject(json);
+        // Test if parsing succeeds.
+        if (!root.success()) {
+             Serial.println("parseObject() failed");
 
-        JsonObject& root = jsonBuffer.parseObject(mybuff);
+        }
 
-        const char* myNFZ = root["noFlyZones"];
+        if (root["noFlyZones"].is<JsonArray&>())
+        {
+          // Fancy parsing stuff to serial
+          JsonArray& nfzJsonArray = root["noFlyZones"];
+          for (int i = 0; i < nfzJsonArray.size(); i++){
+          const char * description = nfzJsonArray[i]["description"];
+          const char * id = nfzJsonArray[i]["id"];
+          Serial << "Description " << i+1 << ": " << description << endl;
+          Serial << "Id " << i+1 << ": " << id << endl;
+          }
+        }
 
-        Serial << endl << "one " << sizeof(root["noFlyZones"]) << endl;
-        //Serial << endl << "two " << String(root["noFlyZones"]) << endl;
-        Serial << endl << "three " << String(myNFZ) << endl;
+        if ( root["noFlyZones"].size() > 0 ) setNFZAlarm("1");  // set alarm
+        if ( root["noFlyZones"].size() == 0 ) setNFZAlarm("0");  // Clear Alarm
 
-        // None of the above works
-        */
-        int nfzIndex = response.body.indexOf("noFlyZones");
-        String NFZString = response.body.substring(nfzIndex);
-        // Serial << "NFZ: " << response.body.substring(nfzIndex) << endl;
-        Serial << "NFZ: " << NFZString << endl;
-        //Serial << "the magic index of noFlyZones is: " << response.body.indexOf("noFlyZones");
 
-        if ( NFZString.length() > 15 ) setNFZAlarm("1");  // set alarm
-        if ( NFZString.length() < 16 ) setNFZAlarm("0");  // Clear Alarm
 
-        Serial << "NFZ length is: " << NFZString.length();
+
         pubCount++;
         }
         return 1;
@@ -296,6 +303,24 @@ String generateRequestBody() {
      JsonVariant lng;
      lng.set(clon, 6);
      obj["lng"] = lng;
+
+     JsonVariant myalt;
+     myalt.set(alt,6);
+     obj["altitude"] = myalt;
+
+     JsonVariant myheading;
+     myheading.set(heading,6);
+     obj["heading"] = myheading;
+
+     JsonVariant myspeed;
+     myspeed.set(mph,6);
+     obj["speed"] = myspeed;
+
+     JsonVariant mystatus;
+     if (mph > 2.0) mystatus.set("in-motion");
+     if (mph < 2.0) mystatus.set("idle-ready");
+     obj["status"] = mystatus;
+
      obj.printTo(buf, sizeof(buf));
        return String(buf);
 
@@ -337,7 +362,7 @@ int setHorn(String command) {
 int setFlasher(String command) {
         if ( atoi(command) == 0 ) {  // turn off
         flasher = false;
-        //strip.Color(0, 0, 0);
+        colorWipe(strip.Color(0, 0, 0), 1);
         return 0;
     }
         if ( atoi(command) == 1 ) {  // turn on

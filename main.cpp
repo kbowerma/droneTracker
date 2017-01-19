@@ -66,7 +66,10 @@ void setup(){
     request.port = 80;
     request.hostname = "kb-dsp-server-dev.herokuapp.com";
     // request.path = String("/api/v1/drones/" + mongoid +"?returnNFZ=true&nfzFields=id");  // by id
-    request.path = String("/api/v1/drones/position/" + System.deviceID() +"?returnNFZ=true&nfzFields=id");
+    //request.path = String("/api/v1/drones/position/" + System.deviceID() +"?returnNFZ=true&nfzFields=id"); // by serial number
+    // This one will also return the nearest drones
+    request.path = String("/api/v1/drones/position/" + System.deviceID() +"?returnNFZ=true&nfzFields=id&nearDronesMaxDist=25&nearDroneFields=status,distance,name");
+    // {{URL}}/drones/position/2c0019000a47353137323334?returnNFZ=true&nfzFields=id&nearDronesMaxDist=25&nearDroneFields=distance,name
 
     nextGPSCheck = millis() + SLOW_BELT_TIMER;
 
@@ -270,6 +273,8 @@ int gpsPublish(String command){
 
         // None of the above works
         */
+
+        /*------------- re enable here
         int nfzIndex = response.body.indexOf("noFlyZones");
         String NFZString = response.body.substring(nfzIndex);
         // Serial << "NFZ: " << response.body.substring(nfzIndex) << endl;
@@ -278,8 +283,58 @@ int gpsPublish(String command){
 
         if ( NFZString.length() > 15 ) setNFZAlarm("1");  // set alarm
         if ( NFZString.length() < 16 ) setNFZAlarm("0");  // Clear Alarm
+        *--------------------*/
+        char charBuf[2000];
+        response.body.toCharArray(charBuf, 2000);
 
-        Serial << "NFZ length is: " << NFZString.length();
+        char json[] = {};
+        strcpy(json, charBuf);
+        StaticJsonBuffer<2000> jsonBuffer;
+        JsonObject& root = jsonBuffer.parseObject(json);
+        // Test if parsing succeeds.
+        if (!root.success()) {
+             Serial.println("parseObject() failed");
+
+        }
+
+
+
+
+        //Serial << "NFZ length is: " << NFZString.length();
+        const char* responseSerialNumber  = root["serialNumber"];
+        Serial << "the parse serialNumber is:  "  << responseSerialNumber << endl;
+
+
+        if (root["noFlyZones"].is<JsonArray&>())
+        {
+            Serial << "noFLyZones is an Array " << root["noFlyZones"].size() << endl;;
+            JsonObject& data =  root["noFlyZones"];
+            for ( int i = 0; i< root["noFlyZones"].size(); i++ ) {
+              Serial << "the noFlyZone array index is  " << i << endl;
+            }
+        }
+
+        if (root["nearestDrones"].is<JsonArray&>())
+        {
+            Serial << "nearestDrones is an Array " << root["nearestDrones"].size() << endl; ;
+            JsonObject& data =  root["nearestDrones"];
+            for ( int i = 0; i< root["nearestDrones"].size(); i++ ) {
+              Serial << "the nearestDrones array index is  " << i << endl;
+            }
+        }
+
+
+
+
+
+
+        //JsonArray& noFlyZonesArray = root["noFlyZones"].asArray();
+        //Serial << " the no fly zone  length is   "  << *noFlyZonesArray[0] << endl;
+        //const const* myflyzone = root["noFlyZones"];
+        //Serial << "NFZsize  "  << noFlyZonesArray.sizeof();
+
+
+
         pubCount++;
         }
         return 1;

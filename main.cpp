@@ -316,6 +316,11 @@ String generateRequestBody() {
      myspeed.set(mph,6);
      obj["speed"] = myspeed;
 
+     JsonVariant mystatus;
+     if (mph > 2.0) mystatus.set("in-motion");
+     if (mph < 2.0) mystatus.set("idle-ready");
+     obj["status"] = mystatus;
+
      obj.printTo(buf, sizeof(buf));
        return String(buf);
 

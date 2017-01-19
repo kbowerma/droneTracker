@@ -49,6 +49,7 @@ void setup(){
     Particle.function("setPage", setPage);
     Particle.function("setSpThr", setSpThr);
     Particle.function("setHDT", setHDT);
+    Particle.function("setNFZAlarm", setNFZAlarm);
     Particle.function("gpsPublish", gpsPublish);
 
     pinMode(D7, OUTPUT); // built in oled
@@ -77,33 +78,28 @@ void setup(){
 
 void loop(){
 
+  if (millis() > nextGPSCheck ) {  // CHECK THE GPS LOOP EVERY SLOW_BELT_TIMER
 
+    gpsDispatch();
+    if (lsmEnabled) lsmGetValues();
+    oledDispatch(page);
+    testPub();
+    oledAlarm();
+    nextGPSCheck = millis() + SLOW_BELT_TIMER;
+  }
 
-if (millis() > nextGPSCheck ) {  // CHECK THE GPS LOOP EVERY SLOW_BELT_TIMER
-
-  gpsDispatch();
-  if (lsmEnabled) lsmGetValues();
-  oledDispatch(page);
-  testPub();
-  oledAlarm();
-  nextGPSCheck = millis() + SLOW_BELT_TIMER;
-}
-
-if ( flasher == true ) {
-  // 120ms
- colorWipe(strip.Color(255, 0, 0), 50); // Red
- colorWipe(strip.Color(255, 255, 255), 20); // white?
- colorWipe(strip.Color(0, 0, 255), 50); // Blue
- //colorWipe(strip.Color(0, 0, 0), 1); // off
-     // was 50 20 50
-}
+  if ( flasher == true ) {
+    // 120ms
+   colorWipe(strip.Color(255, 0, 0), 50); // Red
+   colorWipe(strip.Color(255, 255, 255), 20); // white?
+   colorWipe(strip.Color(0, 0, 255), 50); // Blue
+   //colorWipe(strip.Color(0, 0, 0), 1); // off
+       // was 50 20 50
+  }
 
 
     //delay(500); replaced by SLOW_BELT_TIMER logic
 }
-
-
-
 
 
 // ************ FUNCTIONS ***************

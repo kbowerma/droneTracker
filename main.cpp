@@ -10,6 +10,8 @@
 * [ ] check lsm hardware exists
  */
 
+
+
 #include "application.h"
 #include "spark_wiring_i2c.h"
 #include "math.h"
@@ -46,11 +48,15 @@ void setup(){
     Particle.variable("project", FILENAME);
     Particle.variable("heading", heading);
     Particle.variable("alarm", NFZalarm);
+    Particle.variable("perimeter", perimeter);
+    Particle.variable("nDrone", nearestDroneName);
+    Particle.variable("nDroneDist", nearestDroneDistance);
     Particle.function("setPage", setPage);
     Particle.function("setSpThr", setSpThr);
     Particle.function("setHDT", setHDT);
     Particle.function("setNFZAlarm", setNFZAlarm);
     Particle.function("gpsPublish", gpsPublish);
+    Particle.function("setPerim", setPerim);
 
     pinMode(D7, OUTPUT); // built in oled
     strip.begin();
@@ -65,11 +71,11 @@ void setup(){
     nextPub = millis() + holdDownTimer * 1000;  // need to init first HDT
 
     request.port = 80;
-    request.hostname = "kb-dsp-server-dev.herokuapp.com";
+    request.hostname = "kb-dsp-server.herokuapp.com";
     // request.path = String("/api/v1/drones/" + mongoid +"?returnNFZ=true&nfzFields=id");  // by id
     //request.path = String("/api/v1/drones/position/" + System.deviceID() +"?returnNFZ=true&nfzFields=id"); // by serial number
     // This one will also return the nearest drones
-    request.path = String("/api/v1/drones/position/" + System.deviceID() +"?returnNFZ=true&nfzFields=description&nearDronesMaxDist=25&nearDroneFields=status,distance,name");
+    //request.path = String("/api/v1/drones/position/" + System.deviceID() +"?returnNFZ=true&nfzFields=description&nearDronesMaxDist="+perimeter+"&nearDroneFields=status,distance,name");
     // {{URL}}/drones/position/2c0019000a47353137323334?returnNFZ=true&nfzFields=id&nearDronesMaxDist=25&nearDroneFields=distance,name
 
     nextGPSCheck = millis() + SLOW_BELT_TIMER;
@@ -128,7 +134,11 @@ int setMRT(String command) {
   movingRatioThreshold = command.toInt();
   return 1;
 }
-
+int setPerim(String command) {
+  // sets the perimeter to check for other drones
+  perimeter = command.toInt();
+  return perimeter;
+}
 void oledDispatch(int page) {
   if (page == 0 ) oled0();  // off
   if (page == 1 ) oled1();  // info
@@ -242,6 +252,8 @@ void goPub() {
 }
 int gpsPublish(String command){
 
+  request.path = String("/api/v1/drones/position/" + System.deviceID() +"?returnNFZ=true&nfzFields=description&nearDronesMaxDist="+perimeter+"&nearDroneFields=status,distance,name");
+
         if ( command == "1"  ) {
         request.body = generateRequestBody();
         http.put(request, response, headers);
@@ -264,8 +276,8 @@ int gpsPublish(String command){
 
         }
 
-        if (root["noFlyZones"].is<JsonArray&>())
-        {
+      // No Fly Zones parse anc check
+        if (root["noFlyZones"].is<JsonArray&>()) {
           // Fancy parsing stuff to serial
           JsonArray& nfzJsonArray = root["noFlyZones"];
           for (int i = 0; i < nfzJsonArray.size(); i++){
@@ -275,12 +287,19 @@ int gpsPublish(String command){
           Serial << "Id " << i+1 << ": " << id << endl;
           }
         }
-
         if ( root["noFlyZones"].size() > 0 ) setNFZAlarm("1");  // set alarm
         if ( root["noFlyZones"].size() == 0 ) setNFZAlarm("0");  // Clear Alarm
 
-
-
+        // collsion avoidance block
+        if (root["nearestDrones"].is<JsonArray&>()) {
+          JsonArray& nearestDronesArray = root["nearestDrones"];
+          if (nearestDronesArray.size() > 0 ) {  // only parse if we have something
+            dronesInPermiter = nearestDronesArray.size();
+            checkNearestDrone(nearestDronesArray);
+          } else {
+            nearestDroneName = "";
+          }
+        }
 
         pubCount++;
         }
@@ -365,4 +384,28 @@ int setFlasher(String command) {
         flasher = true;
         return 1;
     }
+}
+void checkNearestDrone(JsonArray& nearestDronesArray) {
+  // We know there is a drone in the perimter so lets show the warning
+    colorWipe(strip.Color(255, 255, 0), 1);
+  for (int i = 0; i < nearestDronesArray.size(); i++){
+    const char* name = nearestDronesArray[i]["name"];
+    const char* status = nearestDronesArray[i]["status"];
+    float distance = nearestDronesArray[i]["distance"];
+    if (i == 0 ) {  // the nearest Drone
+      nearestDroneName = name;
+      nearestDroneDistance = distance;
+    }
+    Serial << endl << endl << name <<  " is " << distance << " away and is "  << status << endl;
+
+
+    display.setTextSize(2);
+    display.clearDisplay();
+    display.setTextColor(BLACK,WHITE);
+    display.setCursor(0,0);
+    display << nearestDroneName << int(nearestDroneDistance);
+    display.display();
+
+
+  }
 }

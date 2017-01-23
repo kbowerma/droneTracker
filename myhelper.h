@@ -1,13 +1,15 @@
 /* Kyle Bowerman 12.29.2016
 *
 */
-#define MYVERSION "2.04.0119"
+#define MYVERSION "2.05.0120-prod"
 #define FILENAME "droneTracker"
 // IMPORTANT: Set pixel COUNT, PIN and TYPE
 #define PIXEL_COUNT 8
 #define PIXEL_PIN D2
 #define PIXEL_TYPE WS2812B
 #define SLOW_BELT_TIMER 500
+
+
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
@@ -21,6 +23,7 @@ float lat, lon, movingRatio;
 float movingRatioThreshold = 0.2;
 int sats;
 int NFZalarm = 0;
+int dronesInPermiter = 0;
 int page = 5, pubCount = 0, holdDownTimer = 30;
 double clat, clon, mph, mps, alt,  hdop;
 double speedThreshold = 4.5;
@@ -28,6 +31,9 @@ unsigned long age, lastPub, nextPub;
 unsigned long isMoving = 1, isStill = 1;
 String myName = " not set";
 String mongoid;
+String nearestDroneName ="";
+double nearestDroneDistance;
+int perimeter = 25;
 uint32_t nextGPSCheck;
 
 http_header_t headers[] = {
@@ -64,3 +70,5 @@ String generateRequestBody();
 void colorWipe(uint32_t c, uint8_t wait);
 int setHorn(String command);
 int setFlasher(String command);
+int setPerim(String command);
+void checkNearestDrone(JsonArray& nearestDronesArray);

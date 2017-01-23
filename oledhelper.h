@@ -107,9 +107,11 @@ void oled4() { // MAGNOMETER
 void oled5() { // Publish
   display.setTextSize(2);
   display.clearDisplay();
-    display.setTextColor(BLACK,WHITE);
+  display.setTextColor(BLACK,WHITE);
   display.setCursor(0,0);
-  display << "Publish 5";
+  if ( nearestDroneName == "") display << " Clear ";
+  if ( nearestDroneName != "") display << dronesInPermiter << ":" << nearestDroneName.substring(0,5) << " "<< int(nearestDroneDistance);
+
   // blue
   display.setCursor(0,16);
   display.setTextColor(WHITE, BLACK);
@@ -118,14 +120,15 @@ void oled5() { // Publish
   display << "mv: " << isMoving << " still: " << isStill << endl;
   display << "mph: " << String(mph) << endl;
   display << "mRatio: " << movingRatio << endl;
-  display << "Pub in " << ( nextPub - millis())/1000 << endl;
+  display << "Pub in " << ( nextPub - millis())/1000 << " per " << perimeter << endl;
   display << "HDT: " << holdDownTimer;
   display << " | MT " << speedThreshold;
   display.display();
 
 
-  display.display();
+  //display.display();
 }
+
 void oledAlarm() { //show the alarm status in the upper right
   display.setTextSize(2);
   display.setCursor(116,0);
